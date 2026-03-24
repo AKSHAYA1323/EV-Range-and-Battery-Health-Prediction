@@ -1,94 +1,100 @@
 import streamlit as st
-from chatbot import ask_groq
+from chatbot import ask_groq # Keep your existing import logic
 
-st.set_page_config(page_title="EV Chatbot", page_icon="🔋")
+# Must be the first Streamlit command
+st.set_page_config(page_title="EV Intelligence", page_icon="⚡", layout="wide")
 
-# --- FIXED CSS WITH DARK TEXT + HIGH CONTRAST BUBBLES ---
-custom_css = """
+# -------------------- UI THEME & DESIGN --------------------
+st.markdown("""
 <style>
-.chat-container {
-    padding: 12px;
-    border-radius: 12px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    max-width: 80%;
-    font-size: 16px;
-    color: #1a1a1a; /* DARK TEXT */
-}
+    .stApp {
+        background: radial-gradient(circle at center, #0B0E2A 0%, #050714 100%);
+        color: #FFFFFF;
+    }
+    
+    /* Landing Page Elements */
+    .main-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 3rem; }
+    .top-badge { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 5px 15px; font-size: 0.8rem; color: #8E94B2; margin-bottom: 20px; }
+    .main-title { font-size: 4rem; font-weight: 800; text-align: center; margin-bottom: 10px; }
+    .title-blue { color: #4ADEDE; text-shadow: 0 0 30px rgba(74, 222, 222, 0.3); }
+    .subtitle { color: #8E94B2; text-align: center; max-width: 600px; margin-bottom: 50px; font-size: 1.1rem; }
 
-.user-bubble {
-    background-color: #d4f8d4; /* light green */
-    margin-left: auto;
-    border: 1px solid #9be89b;
-}
+    /* Card Design */
+    .card-box {
+        background: linear-gradient(145deg, #0F1229, #080A1A);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 40px;
+        height: 320px;
+        transition: 0.3s;
+    }
+    .icon-square { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 1.5rem; }
 
-.bot-bubble {
-    background-color: #f0f4ff; /* light blue */
-    margin-right: auto;
-    border: 1px solid #bcd3ff;
-}
-
-.sender {
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #000000; /* dark text color */
-}
-
-/* Input box style */
-input[type="text"] {
-    color: #000000 !important;
-}
+    /* Chat Bubbles */
+    .chat-container { padding: 14px; border-radius: 14px; margin: 8px 0; max-width: 85%; }
+    .user-bubble { background: rgba(74, 222, 222, 0.1); border: 1px solid #4ADEDE; margin-left: auto; }
+    .bot-bubble { background: rgba(130,150,255,0.1); border: 1px solid #6C9CFF; margin-right: auto; }
+    
+    /* Buttons */
+    div.stButton > button {
+        background: transparent; border: none; color: #4ADEDE !important; font-weight: 600; padding: 0;
+    }
+    .back-btn > div.stButton > button { color: #8E94B2 !important; font-size: 0.9rem; }
 </style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --- TITLE ---
-st.title("⚡ EV Smart Assistant")
-st.caption("Your intelligent EV expert — Ask anything about electric vehicles.")
-
-# --- SESSION STATE ---
+# -------------------- SESSION STATE LOGIC --------------------
+if 'page' not in st.session_state:
+    st.session_state.page = 'home'
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# --- USER INPUT ---
-user_input = st.text_input(
-    "💬 Type your EV question:",
-    placeholder="Example: 'What is the difference between LFP and NMC batteries?'",
-)
+def navigate_to(page_name):
+    st.session_state.page = page_name
 
-if st.button("Send"):
-    if user_input.strip():
+# -------------------- HOME PAGE --------------------
+if st.session_state.page == 'home':
+    st.markdown("""
+        <div class="main-container">
+            <div class="top-badge">⚡ Unified EV Analytics Platform</div>
+            <h1 class="main-title">EV <span class="title-blue">Intelligence</span></h1>
+            <p class="subtitle">Predict range, analyze battery performance, and get instant answers to all your EV questions.</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-        # Add user query
-        st.session_state.chat_history.append(("You", user_input))
+    col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
+    
+    with col2:
+        st.markdown('<div class="card-box"><div class="icon-square">🔋</div><h3>EV Predictor</h3><p style="color:#8E94B2;">Predict range and battery capacity based on specs.</p></div>', unsafe_allow_html=True)
+        if st.button("Explore →", key="go_pred"): navigate_to('predictor')
 
-        # Get LLM response
-        reply = ask_groq(user_input)
+    with col3:
+        st.markdown('<div class="card-box"><div class="icon-square">🤖</div><h3>EV Chatbot</h3><p style="color:#8E94B2;">Ask EV-related questions and get instant, knowledgeable responses.</p></div>', unsafe_allow_html=True)
+        if st.button("Explore →", key="go_chat"): navigate_to('chatbot')
 
-        # Add bot reply
-        st.session_state.chat_history.append(("Bot", reply))
+# -------------------- CHATBOT PAGE --------------------
+elif st.session_state.page == 'chatbot':
+    st.markdown('<div class="back-btn">', unsafe_allow_html=True)
+    if st.button("← Back to Dashboard"): navigate_to('home')
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.title("🤖 EV Smart Assistant")
+    st.caption("Powered by Groq Llama 3.3")
 
-# --- SHOW CHAT HISTORY ---
-st.write("### 💬 Conversation")
+    user_input = st.text_input("💬 Ask your EV question:", placeholder="How do LFP batteries work?")
 
-for sender, msg in st.session_state.chat_history:
-    if sender == "You":
-        st.markdown(
-            f"""
-            <div class="chat-container user-bubble">
-                <div class="sender">🧍 You</div>
-                {msg}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f"""
-            <div class="chat-container bot-bubble">
-                <div class="sender">🤖 EV Bot</div>
-                {msg}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    if st.button("Send Message"):
+        if user_input.strip():
+            st.session_state.chat_history.append(("You", user_input))
+            reply = ask_groq(user_input) # Logic from chatbot.py
+            st.session_state.chat_history.append(("Bot", reply))
+
+    for sender, msg in st.session_state.chat_history:
+        bubble = "user-bubble" if sender == "You" else "bot-bubble"
+        st.markdown(f'<div class="chat-container {bubble}"><b>{sender}</b><br>{msg}</div>', unsafe_allow_html=True)
+
+# -------------------- PREDICTOR PAGE (Placeholder) --------------------
+elif st.session_state.page == 'predictor':
+    if st.button("← Back to Dashboard"): navigate_to('home')
+    st.title("🔋 EV Predictor")
+    st.write("Predictor logic goes here...")
